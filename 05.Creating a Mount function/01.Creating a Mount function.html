@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        .red {
+            color: red;
+        }
+
+        .blue {
+            color: blue;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app"></div>
+</body>
+<script>
+    function h(tag, props, children) {
+        return {
+            tag, props, children
+        }
+    }
+    function mount(vnode, container) {
+        console.log(vnode)
+        let el = document.createElement(vnode.tag);
+        if (vnode.props) {
+            for (const key in vnode.props) {
+                const value = vnode.props[key]
+                el.setAttribute(key, value)
+            }
+        }
+        if (vnode.children) {
+            if (typeof vnode.children === "string") {
+                el.textContent = vnode.children
+
+            } else {
+                vnode.children.forEach(child => {
+                    // 递归
+                    mount(child, el)
+                });
+            }
+            /* vnode.children.forEach(child => {
+                let childNode = document.createElement(child.tag);
+                childNode.innerText = child.children
+                el.appendChild(childNode)
+            }); */
+        }
+        container.appendChild(el)
+    }
+    const vdom = h('div', { class: 'red' }, [
+        h('span', null, [
+            h('i', { class: 'blue' }, 'I am a i tag')
+        ])
+    ])
+    const vdom2 = h('div', { class: 'red' }, [
+        h('span', null, 'I am a span tag')
+    ])
+    // console.log(vdom)
+    mount(vdom, document.getElementById("app"))
+    function patch(vdom, vdom2) {
+
+    }
+</script>
+
+</html>

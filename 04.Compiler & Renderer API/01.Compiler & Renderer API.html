@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        .red {
+            background-color: red;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app"></div>
+</body>
+<script>
+    function h(tag, props, children) {
+        let element = document.createElement(tag);
+        if (props) {
+            element.setAttribute("class", props.class);
+        }
+        console.log(children)
+
+        if (children) {
+            let childrenNode = children.map(item => {
+                console.log(item)
+                return item.innerText = item
+            })
+            element.innerHTML = childrenNode
+        }
+        return element
+
+    }
+    function mount(vnode, container) {
+        container.appendChild(vdom)
+        document.documentElement.append(container)
+    }
+    const vdom = h('div', { class: 'red' }, [
+        h('span', null, ['hello'])
+    ])
+    // console.log(vdom)
+    mount(vdom, document.getElementById("app"))
+</script>
+
+</html>
