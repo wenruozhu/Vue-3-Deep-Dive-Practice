@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+
+<body>
+
+</body>
+<script>
+    let activeEffect = null
+    class Dep {
+        constructor(value) {
+            this.subscribers = new Set()
+            this.value = value
+        }
+        // subscribers = new Set()
+        depend() {
+            if (activeEffect) {
+                this.subscribers.add(activeEffect)
+            }
+        }
+        notify() {
+            this.subscribers.forEach(effect => {
+                effect()
+            })
+        }
+    }
+
+    function watchEffect(effect) {
+        activeEffect = effect
+        effect()
+        activeEffect = null
+    }
+
+    const dep = new Dep('hello')
+
+    watchEffect(() => {
+        dep.depend()
+        console.log(dep.value)
+    })
+    dep.value = 'changed'
+    dep.notify()
+</script>
+
+</html>

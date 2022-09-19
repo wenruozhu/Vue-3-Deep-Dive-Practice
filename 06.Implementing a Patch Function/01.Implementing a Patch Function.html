@@ -11,8 +11,8 @@
             color: red;
         }
 
-        .blue {
-            color: blue;
+        .green {
+            color: green;
         }
     </style>
 </head>
@@ -27,8 +27,10 @@
         }
     }
     function mount(vnode, container) {
-        console.log(vnode)
-        let el = document.createElement(vnode.tag);
+        // console.log('vnode',vnode)
+        const el = vnode.el = document.createElement(vnode.tag)
+        console.log(el)
+        // let el = document.createElement(vnode.tag);
         if (vnode.props) {
             for (const key in vnode.props) {
                 const value = vnode.props[key]
@@ -53,25 +55,27 @@
         }
         container.appendChild(el)
     }
+    
     const vdom = h('div', { class: 'red' }, [
         h('span', null, [
             h('i', { class: 'blue' }, 'I am a i tag')
         ])
     ])
-    const vdom2 = h('div', { class: 'red' }, [
-        h('span', null, 'I am a span tag')
-    ])
-    // console.log(vdom)
+
     mount(vdom, document.getElementById("app"))
+    // console.log(vdom)
+    // mount(vdom2, document.getElementById("app"))
     function patch(n1, n2) {
+        console.log(n1, n2)
         if (n1.tag === n2.tag) {
-            const el = n2.tag = n1.tag
+            const el = n2.el = n1.el
             const oldProps = n1.props || {}
             const newProps = n2.props || {}
             for (const key in newProps) {
                 const oldValue = oldProps[key]
                 const newValue = newProps[key]
-                if (oldValue !== newValue) {
+                if (newValue !== oldValue) {
+                    console.log('el',el)
                     el.setAttribute(key, newValue)
                 }
             }
@@ -88,7 +92,7 @@
                     if (oldChildren !== newChildren) {
                         el.textContent = newChildren
                     }
-                } else {
+                } else { //oldChildren is Array,newChildren is String,直接覆盖所有现有的DOM节点并丢弃它们
                     el.textContent = newChildren
                 }
             } else {
@@ -98,13 +102,28 @@
                         mount(child, el)
                     })
                 } else {
-
+                    let commonLength = Math.min(oldChildren.length, newChildren.length)
+                    for (let i = 0; i < commonLength; i++) {
+                        patch(oldChildren[i], newChildren[i])
+                    }
+                    if (newChildren.length > oldChildren.length) {
+                        newChildren.slice(oldChildren.length).forEach(child => {
+                            mount(child, el)
+                        })
+                    } else if (newChildren.length < oldChildren.length) {
+                        oldChildren.slice(newChildren.length).forEach(child => {
+                            el.removeChild(child)
+                        })
+                    }
                 }
             }
         } else {
 
         }
     }
+    const vdom2 = h('div', { class: 'green' }, [
+        h('span', null, 'I am a span tag')
+    ])
     patch(vdom, vdom2)
 </script>
 
