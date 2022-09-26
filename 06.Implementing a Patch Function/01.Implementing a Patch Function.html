@@ -67,6 +67,7 @@
     // mount(vdom2, document.getElementById("app"))
     function patch(n1, n2) {
         console.log(n1, n2)
+        // 传入相同的标签
         if (n1.tag === n2.tag) {
             const el = n2.el = n1.el
             const oldProps = n1.props || {}
@@ -84,41 +85,9 @@
                     el.removeAttribute(key)
                 }
             }
-            // children
-            const oldChildren = n1.children
-            const newChildren = n2.children
-            if (typeof newChildren === 'string') {
-                if (typeof oldChildren === 'string') {
-                    if (oldChildren !== newChildren) {
-                        el.textContent = newChildren
-                    }
-                } else { //oldChildren is Array,newChildren is String,直接覆盖所有现有的DOM节点并丢弃它们
-                    el.textContent = newChildren
-                }
-            } else {
-                if (typeof oldChildren === 'string') {
-                    el.innerHTML = ""
-                    newChildren.forEach(child => {
-                        mount(child, el)
-                    })
-                } else {
-                    let commonLength = Math.min(oldChildren.length, newChildren.length)
-                    for (let i = 0; i < commonLength; i++) {
-                        patch(oldChildren[i], newChildren[i])
-                    }
-                    if (newChildren.length > oldChildren.length) {
-                        newChildren.slice(oldChildren.length).forEach(child => {
-                            mount(child, el)
-                        })
-                    } else if (newChildren.length < oldChildren.length) {
-                        oldChildren.slice(newChildren.length).forEach(child => {
-                            el.removeChild(child)
-                        })
-                    }
-                }
-            }
+            
         } else {
-
+            // 
         }
     }
     const vdom2 = h('div', { class: 'green' }, [

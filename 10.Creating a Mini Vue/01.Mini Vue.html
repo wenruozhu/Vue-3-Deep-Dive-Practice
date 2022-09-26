@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+
+<body>
+    <div id="app"></div>
+</body>
+<script>
+    // Renderer
+    // Render Phase
+    function h(tag, props, children) {
+        return {
+            tag, props, children
+        }
+    }
+    // Mount Phase
+    function mount(vnode, container) {
+        // console.log('vnode',vnode)
+        const el = vnode.el = document.createElement(vnode.tag)
+        // console.log(el)
+        // let el = document.createElement(vnode.tag);
+        if (vnode.props) {
+            for (let key in vnode.props) {
+                const value = vnode.props[key]
+                if (key.startsWith('on')) {
+                    // console.log(value)
+                    el.addEventListener(key.slice(2).toLowerCase(), value)
+                } else {
+
+                    el.setAttribute(key, value)
+                }
+            }
+        }
+        if (vnode.children) {
+            if (Array.isArray(vnode.children)) {
+                vnode.children.forEach(child => {
+                    if (typeof child === "string") {
+                        el.append(child)
+                    } else if (typeof child === "object") {
+                        // 递归
+                        mount(child, el)
+                    }
+                });
+            } else {
+                el.append(vnode.children)
+            }
+            /* if (typeof vnode.children === "string") {
+                el.textContent = vnode.children
+
+            } else {
+                vnode.children.forEach(child => {
+                    // 递归
+                    mount(child, el)
+                });
+            } */
+        }
+        container.append(el)
+        // container.appendChild(el)
+    }
+    // Patch Phase
+
+    // Reactivity
+    class Dep {
+        subscribers = new Set()
+        // subscribers = new Set()
+        depend() {
+            if (activeEffect) {
+                this.subscribers.add(activeEffect)
+            }
+        }
+        notify() {
+            this.subscribers.forEach(effect => effect()
+            )
+        }
+    }
+    let activeEffect = null
+    function watchEffect(effect) {
+        activeEffect = effect
+        effect()
+        activeEffect = null
+    }
+    const targetMap = new WeakMap()
+
+    function getDep(target, key) {
+        let depsMap = targetMap.get(key)
+        if (!depsMap) {
+            targetMap.set(target, depsMap = new Map())
+        }
+        let dep = depsMap.get(key)
+        if (!dep) {
+            depsMap.set(key, dep = new Dep())
+        }
+        // console.log('dep', dep)
+        return dep
+    }
+    function reactive(target) {
+        const handler = {
+            get(target, key, receiver) {
+                // console.log('line 48', target, key, receiver)
+                // console.log('Get was called with key = ' + key)
+                const dep = getDep(target, key)
+                let result = Reflect.get(target, key, receiver)
+                dep.depend()
+                return result
+            },
+            set(target, key, value, receiver) {
+                const dep = getDep(target, key)
+                // console.log(dep)
+                // let oldValue = target[key]
+                console.log('Set was called with key = ' + key + ' value = ' + value)
+                let result = Reflect.set(target, key, value, receiver)
+                // console.log("oldValue, result", oldValue, result)
+                dep.notify()
+                return result
+
+            }
+        }
+        return new Proxy(target, handler)
+        // console.log(raw)
+    }
+    const App = {
+        data: reactive({
+            count: 0
+        }),
+        render() {
+            return h('div', {
+                onClick: () => {
+                    // console.log(this.data)
+                    this.data.count++
+                }
+            }, String(this.data.count))
+        }
+    }
+    function mountApp(component, container) {
+        let isMounted = false
+        let prevVdom
+        watchEffect(() => {
+            if (!isMounted) {
+                prevVdom = component.render()
+                mount(prevVdom, container)
+                isMounted = true
+            } else {
+                const newVdom = component.render()
+                console.log('newVdom', newVdom)
+                patch(prevVdom, newVdom)
+                prevVdom = newVdom
+            }
+        })
+    }
+    mountApp(App, document.getElementById('app'))
+    // Compiler
+</script>
+
+</html>

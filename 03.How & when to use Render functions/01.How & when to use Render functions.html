@@ -7,8 +7,14 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Document</title>
     <style>
-        .mt-4 {
+        .mt-1 {
             margin: 10px;
+        }
+        .mt-2 {
+            margin: 20px;
+        }
+        .mt-3 {
+            margin: 30px;
         }
     </style>
 </head>
@@ -27,8 +33,7 @@
                 'div',
                 { class: 'stack' },
                 slot.map(child => {
-                    return h('div', { class: `mt-${this.$attrs.size}` }, [child])
-                    // this.$props.size ?
+                    return h('div', { class: `mt-${this.$attrs.size}` }, child)
                 })
             )
         }
@@ -38,14 +43,14 @@
             Stack
         },
         template: `
-        <Stack size='4'>
-            <div>hello</div>
-            <Stack size='4'>
-                <div>hello</div>
-                <div>hello</div>
-                <Stack size='4'>
-                    <div>hello</div>
-                    <div>hello</div>
+        <Stack size='1'>
+            <div>hello 1</div>
+            <Stack size='2'>
+                <div>hello 2</div>
+                <div>hello 2</div>
+                <Stack size='3'>
+                    <div>hello 3</div>
+                    <div>hello 3</div>
                 </Stack>
                 
             </Stack>

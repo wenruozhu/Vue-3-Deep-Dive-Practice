@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+
+<body>
+
+</body>
+<script>
+    let activeEffect = null
+    class Dep {
+        subscribers = new Set()
+        depend() {
+            if (activeEffect) {
+                this.subscribers.add(activeEffect)
+            }
+        }
+        notify() {
+            this.subscribers.forEach(effect => {
+                effect()
+            })
+        }
+    }
+    const targetMap = new WeakMap()
+    function getDep(target, key) {
+        let depsMap = targetMap.get(key)
+        if (!depsMap) {
+            targetMap.set(target, depsMap = new Map())
+        }
+        let dep = depsMap.get(key)
+        if (!dep) {
+            depsMap.set(key, dep = new Dep())
+        }
+        // console.log('dep', dep)
+        return dep
+    }
+    function watchEffect(effect) {
+        activeEffect = effect
+        effect()
+        activeEffect = null
+    }
+    function reactive(target) {
+        // Object.defineProperty
+        /* Object.keys(target).forEach(key => {
+            // const dep = new Dep()
+            let value = target[key]
+            // console.log(value)
+            Object.defineProperty(target, key, {
+                get() {
+                    const dep = getDep(target, key)
+
+                    dep.depend()
+                    return value
+                },
+                set(newValue) {
+                    console.log('newValue', newValue)
+                    const dep = getDep(target, key)
+
+                    value = newValue
+                    dep.notify()
+                }
+            })
+        })
+        return target */
+        const handler = {
+            get(target, key, receiver) {
+                // console.log('line 48', target, key, receiver)
+                // console.log('Get was called with key = ' + key)
+                const dep = getDep(target, key)
+                let result = Reflect.get(target, key, receiver)
+                dep.depend()
+                return result
+            },
+            set(target, key, value, receiver) {
+                const dep = getDep(target, key)
+                // console.log(dep)
+                // let oldValue = target[key]
+                // console.log('Set was called with key = ' + key + ' value = ' + value)
+                let result = Reflect.set(target, key, value, receiver)
+                // console.log("oldValue, result", oldValue, result)
+                dep.notify()
+                return result
+
+            }
+        }
+        return new Proxy(target, handler)
+        // console.log(raw)
+    }
+    const state = reactive({
+        count: 0
+    })
+    
+    watchEffect(() => {
+        console.log(state.count)
+    })
+    state.count++
+
+</script>
+
+</html>
